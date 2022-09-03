@@ -2,7 +2,7 @@
 
 set -e
 
-MAX_PAGES=1
+MAX_PAGES=2
 
 URL="https://api.github.com/users/$USERNAME/starred?per_page=100"
 
