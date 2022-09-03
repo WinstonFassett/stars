@@ -1,10 +1,12 @@
 # stars
 
-Exports of my Github starred repos. Currently CSV-only.
+Daily export of my GitHub starred repos in [stars.csv](stars.csv)
 
-View Data at https://flatgithub.com/WinstonFassett/stars?filename=stars.csv
+Browse with GitHub's [Flat Viewer](https://github.com/githubocto/flat-viewer) at [`flatgithub.com/WinstonFassett/stars`](https://flatgithub.com/WinstonFassett/stars?filename=stars.csv&sort=%20starred_at%2Cdesc)
 
-## ETL in Github Action
+## ETL
 
- - Extract all pages of stars using GH REST API using `curl`
- - Convert JSON to CSV using `jq`
+GitHub Action [get-stars.yml](.github/workflows/get-stars.yml) runs:
+
+ - [get-stars.sh](etl/get-stars.sh) uses `curl` to extract starred repositories 
+ - [stars-to-csv.sh](etl/stars-to-csv.sh) converts output to CSV using `jq`
