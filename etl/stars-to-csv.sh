@@ -2,7 +2,7 @@
 
 set -e
 
-echo "full_name, description, language, topics, license_name, stargazers_count, forks_count, homepage, html_url, open_issues_count, name, owner_name, owner_avatar_url, created_at, starred_at, updated_at, pushed_at, fork, archived"
+echo "full_name,description,language,topics,license_name,stargazers_count,forks_count,homepage,html_url,open_issues_count,name,owner_name,owner_avatar_url,created_at,starred_at,updated_at,pushed_at,fork,archived"
 
 jq -r '.[] 
 | {starred_at} + .repo 
