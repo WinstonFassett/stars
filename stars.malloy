@@ -1,0 +1,82 @@
+source: stars is duckdb.sql("""
+  SELECT 
+    full_name,
+    description,
+    starred_at,
+    topics,
+    language,
+    license_name,
+    homepage,
+    owner_avatar_url,
+    owner_name,
+    name,
+    stargazers_count,
+    open_issues_count,
+    SPLIT(topics,', ') as topic_terms,
+    updated_at,
+    pushed_at,
+  FROM './stars.csv' 
+""") extend {
+
+  rename: license is license_name
+  # link
+  dimension: homepage_link is homepage
+  # image { height=16px width=16px }
+  dimension: owner_image is owner_avatar_url
+  measure: repo_count is count()
+  measure: stargazers is sum(stargazers_count)
+  measure: open_issues is sum(open_issues_count)
+  measure: percent_of_repos is repo_count / all(repo_count)
+  -- measure: topic_count is count ( topic_terms.value)
+  measure: owner_count is count (owner_name)
+  measure: language_count is count (language)
+  
+  view: by_topic_terms is {
+    where: topics != null
+    group_by: topic_term is topic_terms.value
+    aggregate: 
+      repo_count
+      percent_of_repos
+  }
+
+  view: by_language is {
+    where: language != null
+    group_by: language
+    aggregate: 
+      repo_count
+      percent_of_repos
+  }
+
+  view: top_owners is {
+    group_by: 
+      owner_image
+      owner_name
+    aggregate: 
+      repo_count
+    limit: 100
+  }
+
+  view: top_languages is {
+    where: language != null
+    group_by: language
+    aggregate: 
+      repo_count
+    limit: 10
+  }
+
+  view: by_license is {
+    where: license != null
+    group_by: license
+    aggregate: 
+      repo_count
+      percent_of_repos
+  }
+
+  view: by_language_by_license is {
+    group_by: language
+    aggregate: repo_count
+      nest:
+        by_license
+  } 
+
+}

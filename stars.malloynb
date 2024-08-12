@@ -1,0 +1,65 @@
+>>>markdown
+## Overview
+>>>malloy
+import {stars} from 'stars.malloy'
+
+# dashboard
+run: stars -> {
+  aggregate: 
+    repo_count
+    -- topic_count
+    owner_count
+    language_count
+}
+>>>markdown
+## Recently Starred
+>>>malloy
+run: stars -> {
+  group_by: 
+    owner_image
+    full_name    
+    description
+    topics
+  aggregate: stargazers, open_issues
+  group_by: starred_at
+  order_by: starred_at desc
+  limit: 10    
+}
+>>>markdown
+## Top Topics
+>>>malloy
+
+run: stars -> by_topic_terms + {
+  limit: 10
+  # list
+  nest: top_10_repos is name + {
+    aggregate: stargazers
+    limit: 10
+  }
+}
+>>>markdown
+## Top Owners
+>>>malloy
+run: stars -> top_owners + {
+  limit: 10
+  # list_detail
+  nest: by_topic_terms + {
+    limit: 10    
+  }
+  # list_detail
+  nest: by_language
+}
+>>>markdown
+## Top Language Authors
+>>>malloy
+# dashboard
+run: stars -> top_languages + {
+    nest: by_owner is {        
+        group_by: 
+            owner_image
+            owner_name
+        limit: 10
+        aggregate: repo_count
+    }
+    limit: 10
+}
