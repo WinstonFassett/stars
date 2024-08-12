@@ -5,7 +5,6 @@ import { stars, repo_topics } from 'stars.malloy'
 >>>markdown
 ## Overview
 >>>malloy
-
 # dashboard
 run: stars -> {
   aggregate: 
@@ -31,7 +30,6 @@ run: stars -> {
 >>>markdown
 ## Top Topics
 >>>malloy
-
 # dashboard
 run: repo_topics -> by_topic + {
   limit: 10    
