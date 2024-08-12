@@ -44,7 +44,6 @@ run: repo_topics -> by_topic + {
     limit: 10
   }    
 }
->>>malloy
 >>>markdown
 ## Top Owners
 >>>malloy
