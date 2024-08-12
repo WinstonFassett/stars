@@ -1,7 +1,7 @@
 >>>markdown
 ## Model
 >>>malloy
-import { stars } from 'stars.malloy'
+import { stars, with_topics, repo_topics } from 'stars.malloy'
 >>>markdown
 ## Overview
 >>>malloy
@@ -32,13 +32,24 @@ run: stars -> {
 ## Top Topics
 >>>malloy
 
--- run: stars -> by_topic_terms + {
+run: repo_topics -> by_topic + {
+  -- group_by: topic
+  -- aggregate: count(*)
+  -- select: *
+  -- limit: 10    
+  -- nest: top_10_repos is full_name + {
+  --   aggregate: stargazers
+  --   limit: 10
+  -- }  
+  -- nest: top_10_owners is owner_name + {
+  --   aggregate: repo_count
+  --   limit: 10
+  -- }    
+} 
+-- {
+--   group_by: full_name
 --   limit: 10
---   # list
---   nest: top_10_repos is name + {
---     aggregate: stargazers
---     limit: 10
---   }
+
 -- }
 >>>malloy
 >>>markdown

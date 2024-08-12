@@ -3,23 +3,14 @@ source: stars is duckdb.table("stars.csv") extend {
   rename: license is license_name
   # link
   dimension: homepage_link is homepage
-  # image { height=16px width=16px }
+  # image { height=32px width=32px }
   dimension: owner_image is owner_avatar_url
   measure: repo_count is count()
   measure: stargazers is sum(stargazers_count)
   measure: open_issues is sum(open_issues_count)
   measure: percent_of_repos is repo_count / all(repo_count)
-  -- measure: topic_count is count ( topic_terms.value)
   measure: owner_count is count (owner_name)
   measure: language_count is count (language)
-  
-  -- view: by_topic_terms is {
-  --   where: topics != null
-  --   group_by: topic_term is topic_terms.value
-  --   aggregate: 
-  --     repo_count
-  --     percent_of_repos
-  -- }
 
   view: by_language is {
     where: language != null
@@ -63,14 +54,82 @@ source: stars is duckdb.table("stars.csv") extend {
 
 }
 
-source: repo_topics is duckdb.sql("""
-  SELECT
-    *,
-    -- SPLIT(topics,', ') as topic_terms,
-  FROM 'stars.csv'
-""")
 
-run: repo_topics -> {
-  group_by: full_name
-  -- aggregate: topic_count is count(topic_terms.value)
+-- run: repo_topics -> {
+--   group_by: full_name
+--   -- aggregate: topic_count is count(topic_terms.value)
+-- }
+
+-- source: with_topics is stars extend{
+--   -- dimension: topic_terms is unnest!( str_split!(topics,', ')),
+--   dimension: topic_terms is SPLIT!(topics,', '),
+--   measure: topic_count is count (topic_terms)
+-- }
+
+
+-- source: stars_with_topics is duckdb.sql("""
+--   SELECT 
+--     *,
+--     UNNEST(STRING_SPLIT(topics,', ')) as topic,
+--   FROM './stars.csv' 
+-- """) extend {
+--   measure: topic_count is count (topic)
+--   measure: repo_count is count (full_name)
+
+
+--   view: by_topic is {
+--     group_by: full_name
+--     -- aggregate: topic_count is count(topic)  
+--     aggregate: topic_count
+--     order_by: topic_count desc    
+--   }
+
+-- }
+
+-- source: repo_topics1 is duckdb.sql("""
+--   SELECT
+--     *,
+--     SPLIT(topics,', ') as topic_terms,
+--   FROM 'stars.csv'
+-- """)
+
+
+source: repo_topics is stars -> {
+  select: 
+    *,
+    topic is unnest!(str_split!(topics, ', '))
+
+} extend {
+
+  -- # link
+  -- dimension: homepage_link is homepage
+  -- # image { height=32px width=32px }
+  -- dimension: owner_image is owner_avatar_url
+  measure: repo_count is count(full_name)
+  measure: stargazers is sum(stargazers_count)
+  measure: open_issues is sum(open_issues_count)
+  measure: percent_of_repos is repo_count / all(repo_count)
+  measure: owner_count is count (owner_name)
+  measure: language_count is count (language)
+
+  view: by_topic is {
+    group_by: topic
+    aggregate: 
+      repo_count
+      # percent
+      percent_of_repos
+  }
+
+  view: basics is {
+    select:
+      # image { height=32px width=32px }
+      owner_avatar_url
+      full_name
+      description
+      # link
+      homepage_link
+  }
+
 }
+
+
