@@ -1,22 +1,4 @@
-source: stars is duckdb.sql("""
-  SELECT 
-    full_name,
-    description,
-    starred_at,
-    topics,
-    language,
-    license_name,
-    homepage,
-    owner_avatar_url,
-    owner_name,
-    name,
-    stargazers_count,
-    open_issues_count,
-    SPLIT(topics,', ') as topic_terms,
-    updated_at,
-    pushed_at,
-  FROM './stars.csv' 
-""") extend {
+source: stars is duckdb.table("stars.csv") extend {
 
   rename: license is license_name
   # link
@@ -31,20 +13,20 @@ source: stars is duckdb.sql("""
   measure: owner_count is count (owner_name)
   measure: language_count is count (language)
   
-  view: by_topic_terms is {
-    where: topics != null
-    group_by: topic_term is topic_terms.value
-    aggregate: 
-      repo_count
-      percent_of_repos
-  }
+  -- view: by_topic_terms is {
+  --   where: topics != null
+  --   group_by: topic_term is topic_terms.value
+  --   aggregate: 
+  --     repo_count
+  --     percent_of_repos
+  -- }
 
   view: by_language is {
     where: language != null
     group_by: language
     aggregate: 
       repo_count
-      percent_of_repos
+      -- percent_of_repos
   }
 
   view: top_owners is {
@@ -79,4 +61,16 @@ source: stars is duckdb.sql("""
         by_license
   } 
 
+}
+
+source: repo_topics is duckdb.sql("""
+  SELECT
+    *,
+    -- SPLIT(topics,', ') as topic_terms,
+  FROM 'stars.csv'
+""")
+
+run: repo_topics -> {
+  group_by: full_name
+  -- aggregate: topic_count is count(topic_terms.value)
 }

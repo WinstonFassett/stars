@@ -1,7 +1,10 @@
 >>>markdown
+## Model
+>>>malloy
+import { stars } from 'stars.malloy'
+>>>markdown
 ## Overview
 >>>malloy
-import {stars} from 'stars.malloy'
 
 # dashboard
 run: stars -> {
@@ -29,23 +32,24 @@ run: stars -> {
 ## Top Topics
 >>>malloy
 
-run: stars -> by_topic_terms + {
-  limit: 10
-  # list
-  nest: top_10_repos is name + {
-    aggregate: stargazers
-    limit: 10
-  }
-}
+-- run: stars -> by_topic_terms + {
+--   limit: 10
+--   # list
+--   nest: top_10_repos is name + {
+--     aggregate: stargazers
+--     limit: 10
+--   }
+-- }
+>>>malloy
 >>>markdown
 ## Top Owners
 >>>malloy
 run: stars -> top_owners + {
   limit: 10
   # list_detail
-  nest: by_topic_terms + {
-    limit: 10    
-  }
+  -- nest: by_topic_terms + {
+  --   limit: 10    
+  -- }
   # list_detail
   nest: by_language
 }
