@@ -408,17 +408,54 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Mobile sidebar toggle button (hidden on desktop) ────────────────────── */
+.fb-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.fb-menu-btn:hover { background: var(--muted); color: var(--foreground); }
+
+/* ── Mobile backdrop ─────────────────────────────────────────────────────── */
+.fb-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: color-mix(in oklab, var(--background) 30%, #000 70%);
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
   .fb { grid-template-columns: 1fr; }
+
   .fb-sidebar {
-    position: static;
-    max-height: none;
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-    padding: 1rem var(--fb-gutter) 1.25rem;
+    position: fixed;
+    inset-y: 0;
+    left: 0;
+    z-index: 50;
+    width: 17rem;
+    max-height: 100dvh;
+    border-right: 1px solid var(--border);
+    border-bottom: 0;
+    padding: 1rem 1.25rem 3rem 1rem;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    background: var(--background);
   }
-  /* No divider in single-column, so the inner gap collapses to the gutter. */
+  .fb-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .fb-menu-btn { display: flex; }
+
   .fb-header { padding-left: var(--fb-gutter); }
   .fb-brand-tag { display: none; }
   .fb-grid { padding-left: var(--fb-gutter); }

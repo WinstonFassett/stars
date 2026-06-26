@@ -128,6 +128,7 @@
 	let dialogEl = $state(null);
 	let expanded = $state({}); // facet column → showing all rows?
 	let reducedMotion = $state(false); // set from matchMedia on mount
+	let sidebarOpen = $state(false);
 
 	// README rendered in the modal. Fetched on demand from a CDN (no GitHub API
 	// rate limit), rendered + sanitized client-side, and memoized per repo.
@@ -293,6 +294,7 @@
 			filters = [...filters, { column, type: 'set', values: [value] }];
 		}
 		updateURL();
+		closeSidebar();
 	}
 
 	function setRangeFilter(column, min, max) {
@@ -324,12 +326,17 @@
 		}, 180);
 	}
 
+	function closeSidebar() {
+		if (window.innerWidth < 860) sidebarOpen = false;
+	}
+
 	function clearAll() {
 		filters = [];
 		searchField = '';
 		searchQuery = '';
 		clearTimeout(searchDebounce);
 		updateURL();
+		closeSidebar();
 	}
 
 	function toggleExpand(column) {
@@ -700,6 +707,7 @@
 		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		restoreFromURL();
 		window.addEventListener('keydown', onKeydown);
+		document.addEventListener('toggle-sidebar', () => (sidebarOpen = !sidebarOpen));
 
 		// Pre-warm the markdown render libs during idle time so the first README
 		// (hover or click) skips the import cost. mermaid is left out — it's large
@@ -745,7 +753,12 @@
 </script>
 
 <div class="fb">
-	<aside class="fb-sidebar">
+	{#if sidebarOpen}
+		<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+		<div class="fb-backdrop" aria-hidden="true" onclick={() => (sidebarOpen = false)}></div>
+	{/if}
+
+	<aside class="fb-sidebar" class:sidebar-open={sidebarOpen}>
 		<div class="fb-sidebar-head">
 			<span class="fb-brand-name">Filters</span>
 			{#if filters.length || searchQuery}
@@ -820,6 +833,19 @@
 
 	<div class="fb-main">
 		<div class="fb-header">
+			<button
+				class="fb-menu-btn"
+				type="button"
+				aria-label="Toggle filters"
+				aria-expanded={sidebarOpen}
+				onclick={() => (sidebarOpen = !sidebarOpen)}
+			>
+				<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true">
+					<line x1="2" y1="4.5" x2="16" y2="4.5"/>
+					<line x1="2" y1="9" x2="16" y2="9"/>
+					<line x1="2" y1="13.5" x2="16" y2="13.5"/>
+				</svg>
+			</button>
 			<div class="fb-brand">
 				<span class="fb-brand-name">GitHub Stars</span>
 			</div>
