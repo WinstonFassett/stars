@@ -459,6 +459,10 @@
   .fb-header { padding-left: var(--fb-gutter); }
   .fb-brand-tag { display: none; }
   .fb-grid { padding-left: var(--fb-gutter); }
+
+  dialog.fb-modal {
+    max-width: calc(100vw - 0.5rem);
+  }
 }
 
 /* ── Detail modal ────────────────────────────────────────────────────────── */
