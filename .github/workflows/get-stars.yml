@@ -1,0 +1,39 @@
+name: get-stars
+
+on:
+  schedule:
+    # daily at midnight CST
+    - cron: '0 5 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download stars to CSV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          USERNAME: ${{ github.repository_owner }}
+        run: |
+          ./etl/get-stars.sh > ./stars.json
+          ./etl/stars-to-csv.sh ./stars.json > ./stars.csv
+          rm ./stars.json
+        shell: bash
+
+      # Commit the changes
+      - name: Commit files
+        run: |
+          git config --local user.email "actions@noreply.github.com"
+          git config --local user.name "github-actions [bot]"          
+          git add .
+          git commit -m "Update starred repository data"
+
+      # Push the changes
+      - name: Push
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

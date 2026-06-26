@@ -1,0 +1,97 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * ui26 — editorial theme (Winston's design system).
+ *
+ * Token values are taken VERBATIM from the ui26 registry:
+ *   https://winston-ui26.netlify.app/r/themes/editorial.json   (theme-editorial)
+ * This is NOT a hand-authored palette. Regenerate with:
+ *   curl .../r/themes/editorial.json | <emit :root + @media prefers-dark>
+ *
+ * ui26 ships dark as `.dark` (single-theme) or `[data-theme="editorial-dark"]`
+ * (switcher). This project uses prefers-color-scheme, so the dark token block —
+ * the same values ui26 ships — is wired to @media (prefers-color-scheme: dark).
+ * The theming guide sanctions choosing the dark *selector* per project.
+ *
+ * Components in this repo consume the contract directly (var(--foreground),
+ * var(--muted-foreground), var(--border), …) — no private aliases.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light dark;
+  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: var(--font-serif);
+  --background: #f6f5f1;
+  --foreground: #15130f;
+  --card: #ffffff;
+  --card-foreground: #15130f;
+  --popover: #ffffff;
+  --popover-foreground: #15130f;
+  --primary: #15130f;
+  --primary-foreground: #8fb9d6;
+  --secondary: #ecebe4;
+  --secondary-foreground: #15130f;
+  --muted: #ecebe4;
+  --muted-foreground: #6a665d;
+  --accent: #8fb9d6;
+  --accent-foreground: #15130f;
+  --destructive: #9f4a4a;
+  --destructive-foreground: #f6f5f1;
+  --border: #e3e0d8;
+  --border-soft: #ecebe4;
+  --input: #e3e0d8;
+  --ring: #15130f;
+  --radius: 0.125rem;
+  --success: #2f7a3a;
+  --warn: #a35a00;
+  --info: #1f5ab8;
+  --purple: #6a3fb5;
+  --accent-ink: #15130f;
+  --accent-soft: rgba(143, 185, 214, 0.35);
+  --text-mute: #a09b91;
+  --code: #faf9f6;
+  --shadow-color: 0 0 0;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --highlight-inset: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+    --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-display: var(--font-serif);
+    --radius: 0.125rem;
+    --background: #0e0e0f;
+    --foreground: #ececec;
+    --card: #141416;
+    --card-foreground: #ececec;
+    --popover: #141416;
+    --popover-foreground: #ececec;
+    --primary: #8fb9d6;
+    --primary-foreground: #15130f;
+    --secondary: #262628;
+    --secondary-foreground: #ececec;
+    --muted: #1a1a1c;
+    --muted-foreground: #8a8a90;
+    --accent: #8fb9d6;
+    --accent-foreground: #15130f;
+    --destructive: #b54a4a;
+    --destructive-foreground: #0e0e0f;
+    --border: #262628;
+    --border-soft: #1e1e20;
+    --input: #262628;
+    --ring: #8fb9d6;
+    --success: #8fd1a3;
+    --warn: #e6b86a;
+    --info: #8fb9d6;
+    --purple: #b89dd8;
+    --accent-ink: #15130f;
+    --accent-soft: rgba(143, 185, 214, 0.14);
+    --text-mute: #56565c;
+    --code: #1a1a1c;
+  }
+}

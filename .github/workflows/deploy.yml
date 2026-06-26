@@ -1,0 +1,56 @@
+name: deploy-site
+
+# Build the Astro app in site/ and publish to GitHub Pages.
+#
+# Triggers:
+#  - push to main: redeploy when the site source (or anything else) changes.
+#  - workflow_run after get-stars: the daily ETL commits stars.csv using
+#    secrets.GITHUB_TOKEN, and GitHub does NOT fire `on: push` for token-authored
+#    commits (recursion guard) — so we chain off get-stars completing instead, to
+#    redeploy with fresh data. get-stars itself runs on schedule/dispatch, so its
+#    completion does emit workflow_run.
+#  - workflow_dispatch: manual redeploy.
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: [get-stars]
+    types: [completed]
+  workflow_dispatch: {}
+
+# Least-privilege token for Pages deploys.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two Pages deploys at once; let an in-flight one finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # When chained off get-stars, skip if the ETL run failed (nothing new to ship).
+    # Non-workflow_run triggers (push / dispatch) always proceed.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs deps, runs `npm run build` in ./site (which triggers the
+      # `prebuild` syncdata hook: ../stars.csv -> public/data/stars.csv), and
+      # uploads ./site/dist as the Pages artifact.
+      - uses: withastro/action@v6.1.1
+        with:
+          path: ./site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

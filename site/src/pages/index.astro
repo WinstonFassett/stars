@@ -1,0 +1,37 @@
+---
+import '../styles/global.css';
+// Static shell. Interactivity lives in the Svelte 5 island below.
+// Svelte 5 runes ($state/$derived) + FLIP animations for smooth transitions.
+// PapaParse streams the CSV same-origin so it works offline in dev.
+// `initial` is the build-time prerendered first page: Astro's SSR pass renders
+// it as the island fallback, so first paint shows real facets + cards.
+import FacetedBrowse from '../components/FacetedBrowse.svelte';
+import { prerenderSvelteFirstPage } from '../lib/prerender';
+const initial = prerenderSvelteFirstPage();
+const base = import.meta.env.BASE_URL.replace(/\/$/, ''); // '/stars' on Pages, '' in flat dev
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="stylesheet" href={`${base}/theme.css`} />
+		<title>GitHub Stars — faceted browse</title>
+	</head>
+	<body>
+		<FacetedBrowse client:load initial={initial} />
+
+		<style is:global>
+			* { box-sizing: border-box; }
+			html, body { margin: 0; }
+			body {
+				font-family: var(--font-sans);
+				color: var(--foreground);
+				background: var(--background);
+				line-height: 1.5;
+			}
+			a { color: var(--accent); }
+		</style>
+	</body>
+</html>

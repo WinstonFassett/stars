@@ -1,0 +1,123 @@
+@import "tailwindcss";
+@import "./ui26.css";
+@import "./faceted.css";
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * ui26 — editorial theme tokens, VERBATIM from the registry:
+ *   https://winston-ui26.netlify.app/r/themes/editorial.json
+ * Dark wired to prefers-color-scheme (ui26 ships .dark / [data-theme=*-dark];
+ * we choose the dark selector per project, as the theming guide allows).
+ * ───────────────────────────────────────────────────────────────────────── */
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-info: var(--info);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.6);
+}
+
+:root {
+  color-scheme: light dark;
+  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: var(--font-serif);
+  --background: #f6f5f1;
+  --foreground: #15130f;
+  --card: #ffffff;
+  --card-foreground: #15130f;
+  --popover: #ffffff;
+  --popover-foreground: #15130f;
+  --primary: #15130f;
+  --primary-foreground: #8fb9d6;
+  --secondary: #ecebe4;
+  --secondary-foreground: #15130f;
+  --muted: #ecebe4;
+  --muted-foreground: #6a665d;
+  --accent: #8fb9d6;
+  --accent-foreground: #15130f;
+  --destructive: #9f4a4a;
+  --destructive-foreground: #f6f5f1;
+  --border: #e3e0d8;
+  --border-soft: #ecebe4;
+  --input: #e3e0d8;
+  --ring: #15130f;
+  --radius: 0.125rem;
+  --success: #2f7a3a;
+  --warn: #a35a00;
+  --info: #1f5ab8;
+  --purple: #6a3fb5;
+  --accent-ink: #15130f;
+  --accent-soft: rgba(143, 185, 214, 0.35);
+  --text-mute: #a09b91;
+  --code: #faf9f6;
+  --shadow-color: 0 0 0;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --highlight-inset: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+    --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-display: var(--font-serif);
+    --radius: 0.125rem;
+    --background: #0e0e0f;
+    --foreground: #ececec;
+    --card: #141416;
+    --card-foreground: #ececec;
+    --popover: #141416;
+    --popover-foreground: #ececec;
+    --primary: #8fb9d6;
+    --primary-foreground: #15130f;
+    --secondary: #262628;
+    --secondary-foreground: #ececec;
+    --muted: #1a1a1c;
+    --muted-foreground: #8a8a90;
+    --accent: #8fb9d6;
+    --accent-foreground: #15130f;
+    --destructive: #b54a4a;
+    --destructive-foreground: #0e0e0f;
+    --border: #262628;
+    --border-soft: #1e1e20;
+    --input: #262628;
+    --ring: #8fb9d6;
+    --success: #8fd1a3;
+    --warn: #e6b86a;
+    --info: #8fb9d6;
+    --purple: #b89dd8;
+    --accent-ink: #15130f;
+    --accent-soft: rgba(143, 185, 214, 0.14);
+    --text-mute: #56565c;
+    --code: #1a1a1c;
+  }
+}
+
