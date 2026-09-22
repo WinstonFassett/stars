@@ -260,11 +260,14 @@
 
 /* ── Card grid ───────────────────────────────────────────────────────────── */
 .fb-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   gap: 0.7rem;
   padding: 1rem var(--fb-gutter) 4rem 1.5rem;
-  will-change: transform;
 }
 .fb-state {
   padding: 3rem var(--fb-gutter);

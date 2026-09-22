@@ -927,7 +927,7 @@
 		{:else}
 			<div class="fb-scroll-container" bind:this={scrollContainer} onscroll={onScroll}>
 				<div class="fb-scroll-spacer" style="height: {totalHeight}px;">
-					<div class="fb-grid" style="transform: translateY({visibleSlice.offsetY}px);">
+					<div class="fb-grid" style="top: {visibleSlice.offsetY}px;">
 						{#each visibleRows as row (row.full_name)}
 					{@const topics = topicsOf(row)}
 					<div
