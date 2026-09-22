@@ -36,8 +36,9 @@
 
 	const NUMERIC_COLS = new Set(['stargazers_count', 'forks_count', 'open_issues_count']);
 	const BOOLEAN_COLS = new Set(['fork', 'archived']);
-	const RENDER_LIMIT = 100; // cap rendered cards so FLIP animation stays smooth
+	const CARD_HEIGHT = 160; // approximate card height in pixels for virtual scrolling
 	const CARD_TOPICS = 3; // topic chips shown per card before the "+N" overflow
+	const OVERSCAN = 3; // render N extra cards above/below viewport for smooth scrolling
 
 	// Linguist language colors (verbatim from Orbit's lib/languages.ts, which is
 	// the canonical GitHub palette). Unmapped languages fall back to the accent.
@@ -129,6 +130,9 @@
 	let expanded = $state({}); // facet column → showing all rows?
 	let reducedMotion = $state(false); // set from matchMedia on mount
 	let sidebarOpen = $state(false);
+	let scrollTop = $state(0); // virtual scroll position
+	let viewportHeight = $state(800); // viewport height, updated on mount/resize
+	let scrollContainer = $state(null); // reference to scrollable container
 
 	// README rendered in the modal. Fetched on demand from a CDN (no GitHub API
 	// rate limit), rendered + sanitized client-side, and memoized per repo.
@@ -260,10 +264,27 @@
 
 	const filteredRows = $derived(hasData ? sortRows(applyFilters(rows)) : []);
 	const selectedIdx = $derived(selected && filteredRows.length ? filteredRows.findIndex(r => r === selected) : -1);
-	const visibleRows = $derived(
-		hasData ? filteredRows.slice(0, RENDER_LIMIT) : (initial?.visibleRows ?? [])
-	);
+
+	// Virtual scrolling: calculate which cards are visible based on scroll position
+	const visibleSlice = $derived.by(() => {
+		if (!hasData) return { rows: initial?.visibleRows ?? [], startIndex: 0, offsetY: 0 };
+
+		const startIndex = Math.max(0, Math.floor(scrollTop / CARD_HEIGHT) - OVERSCAN);
+		const endIndex = Math.min(
+			filteredRows.length,
+			Math.ceil((scrollTop + viewportHeight) / CARD_HEIGHT) + OVERSCAN
+		);
+
+		return {
+			rows: filteredRows.slice(startIndex, endIndex),
+			startIndex,
+			offsetY: startIndex * CARD_HEIGHT
+		};
+	});
+
+	const visibleRows = $derived(visibleSlice.rows);
 	const displayCount = $derived(hasData ? filteredRows.length : (initial?.resultCount ?? 0));
+	const totalHeight = $derived(filteredRows.length * CARD_HEIGHT);
 	const facetData = $derived(
 		hasData
 			? FACETS.map((facet) => {
@@ -674,6 +695,18 @@
 			.replace(/"/g, '&quot;');
 	}
 
+	// Handle scroll events for virtual scrolling
+	function onScroll(e) {
+		scrollTop = e.currentTarget.scrollTop;
+	}
+
+	// Update viewport height on resize
+	function updateViewportHeight() {
+		if (scrollContainer) {
+			viewportHeight = scrollContainer.clientHeight;
+		}
+	}
+
 	// Escape closes the modal; arrow keys navigate; "/" focuses search.
 	function onKeydown(e) {
 		if (selected) {
@@ -707,7 +740,11 @@
 		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		restoreFromURL();
 		window.addEventListener('keydown', onKeydown);
+		window.addEventListener('resize', updateViewportHeight);
 		document.addEventListener('toggle-sidebar', () => (sidebarOpen = !sidebarOpen));
+
+		// Initialize viewport height
+		requestAnimationFrame(() => updateViewportHeight());
 
 		// Pre-warm the markdown render libs during idle time so the first README
 		// (hover or click) skips the import cost. mermaid is left out — it's large
@@ -748,7 +785,10 @@
 			},
 		});
 
-		return () => window.removeEventListener('keydown', onKeydown);
+		return () => {
+			window.removeEventListener('keydown', onKeydown);
+			window.removeEventListener('resize', updateViewportHeight);
+		};
 	});
 </script>
 
@@ -885,8 +925,10 @@
 		{:else if visibleRows.length === 0}
 			<div class="fb-state">No results match your filters.</div>
 		{:else}
-			<div class="fb-grid">
-				{#each visibleRows as row (row.full_name)}
+			<div class="fb-scroll-container" bind:this={scrollContainer} onscroll={onScroll}>
+				<div class="fb-scroll-spacer" style="height: {totalHeight}px;">
+					<div class="fb-grid" style="transform: translateY({visibleSlice.offsetY}px);">
+						{#each visibleRows as row (row.full_name)}
 					{@const topics = topicsOf(row)}
 					<div
 						class="repo-card"
@@ -950,7 +992,9 @@
 							<span class="repo-date">{formatDate(row.starred_at)}</span>
 						</div>
 					</div>
-				{/each}
+						{/each}
+					</div>
+				</div>
 			</div>
 		{/if}
 	</div>

@@ -247,12 +247,24 @@
 }
 .fb-sort-dir:hover { background: var(--muted); }
 
+/* ── Virtual scrolling container ─────────────────────────────────────────── */
+.fb-scroll-container {
+  height: calc(100vh - 3.6rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.fb-scroll-spacer {
+  position: relative;
+  width: 100%;
+}
+
 /* ── Card grid ───────────────────────────────────────────────────────────── */
 .fb-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   gap: 0.7rem;
   padding: 1rem var(--fb-gutter) 4rem 1.5rem;
+  will-change: transform;
 }
 .fb-state {
   padding: 3rem var(--fb-gutter);
