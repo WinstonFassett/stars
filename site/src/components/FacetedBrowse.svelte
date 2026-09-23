@@ -1038,8 +1038,8 @@
 		{/if}
 
 		<!-- Loading overlay -->
-		{#if loading && !selected && !initial}
-			<div class="fb-loading-overlay" out:fade={{ duration: 600 }}>
+		{#if loading && !selected}
+			<div class="fb-loading-overlay" class:has-initial={!!initial} out:fade={{ duration: 600 }}>
 				<div class="fb-loading-card card">
 					{status || 'Loading…'}
 				</div>

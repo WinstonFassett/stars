@@ -292,6 +292,15 @@
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(2px);
 }
+/* When we have initial/prerendered data, remove the blocking overlay background */
+.fb-loading-overlay.has-initial {
+  background: transparent;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+.fb-loading-overlay.has-initial .fb-loading-card {
+  pointer-events: auto;
+}
 .fb-loading-card {
   /* Use standard card styling from ui26 */
   padding: calc(var(--spacing) * 4);
