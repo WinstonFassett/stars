@@ -36,9 +36,11 @@
 
 	const NUMERIC_COLS = new Set(['stargazers_count', 'forks_count', 'open_issues_count']);
 	const BOOLEAN_COLS = new Set(['fork', 'archived']);
-	const CARD_HEIGHT = 160; // approximate card height in pixels for virtual scrolling
+	const CARD_HEIGHT = 160; // approximate card height in pixels
+	const CARD_MIN_WIDTH = 330; // matches grid-template-columns minmax value
+	const CARD_GAP = 11.2; // 0.7rem gap in pixels (0.7 * 16)
 	const CARD_TOPICS = 3; // topic chips shown per card before the "+N" overflow
-	const OVERSCAN = 3; // render N extra cards above/below viewport for smooth scrolling
+	const OVERSCAN_ROWS = 2; // render N extra rows above/below viewport
 
 	// Linguist language colors (verbatim from Orbit's lib/languages.ts, which is
 	// the canonical GitHub palette). Unmapped languages fall back to the accent.
@@ -132,6 +134,7 @@
 	let sidebarOpen = $state(false);
 	let scrollTop = $state(0); // virtual scroll position
 	let viewportHeight = $state(800); // viewport height, updated on mount/resize
+	let containerWidth = $state(1200); // container width, updated on mount/resize
 	let scrollContainer = $state(null); // reference to scrollable container
 
 	// README rendered in the modal. Fetched on demand from a CDN (no GitHub API
@@ -266,25 +269,37 @@
 	const selectedIdx = $derived(selected && filteredRows.length ? filteredRows.findIndex(r => r === selected) : -1);
 
 	// Virtual scrolling: calculate which cards are visible based on scroll position
+	// Account for grid layout with multiple columns
 	const visibleSlice = $derived.by(() => {
 		if (!hasData) return { rows: initial?.visibleRows ?? [], startIndex: 0, offsetY: 0 };
 
-		const startIndex = Math.max(0, Math.floor(scrollTop / CARD_HEIGHT) - OVERSCAN);
-		const endIndex = Math.min(
-			filteredRows.length,
-			Math.ceil((scrollTop + viewportHeight) / CARD_HEIGHT) + OVERSCAN
-		);
+		// Calculate number of columns in the grid
+		const columns = Math.max(1, Math.floor(containerWidth / (CARD_MIN_WIDTH + CARD_GAP)));
+
+		// Calculate which rows are visible
+		const startRow = Math.max(0, Math.floor(scrollTop / CARD_HEIGHT) - OVERSCAN_ROWS);
+		const visibleRows = Math.ceil(viewportHeight / CARD_HEIGHT) + (OVERSCAN_ROWS * 2);
+		const endRow = startRow + visibleRows;
+
+		// Convert rows to card indices
+		const startIndex = startRow * columns;
+		const endIndex = Math.min(filteredRows.length, endRow * columns);
 
 		return {
 			rows: filteredRows.slice(startIndex, endIndex),
 			startIndex,
-			offsetY: startIndex * CARD_HEIGHT
+			offsetY: startRow * CARD_HEIGHT
 		};
 	});
 
 	const visibleRows = $derived(visibleSlice.rows);
 	const displayCount = $derived(hasData ? filteredRows.length : (initial?.resultCount ?? 0));
-	const totalHeight = $derived(filteredRows.length * CARD_HEIGHT);
+	const totalHeight = $derived.by(() => {
+		if (!hasData) return 0;
+		const columns = Math.max(1, Math.floor(containerWidth / (CARD_MIN_WIDTH + CARD_GAP)));
+		const totalRows = Math.ceil(filteredRows.length / columns);
+		return totalRows * CARD_HEIGHT;
+	});
 	const facetData = $derived(
 		hasData
 			? FACETS.map((facet) => {
@@ -700,10 +715,11 @@
 		scrollTop = e.currentTarget.scrollTop;
 	}
 
-	// Update viewport height on resize
+	// Update viewport dimensions on resize
 	function updateViewportHeight() {
 		if (scrollContainer) {
 			viewportHeight = scrollContainer.clientHeight;
+			containerWidth = scrollContainer.clientWidth;
 		}
 	}
 
