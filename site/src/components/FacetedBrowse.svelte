@@ -1039,7 +1039,7 @@
 
 		<!-- Loading overlay -->
 		{#if loading && !selected}
-			<div class="fb-loading-overlay" class:has-initial={!!initial} out:fade={{ duration: 600 }}>
+			<div class="fb-loading-overlay" class:has-filters={filters.length > 0 || searchQuery.length > 0} out:fade={{ duration: 600 }}>
 				<div class="fb-loading-card card">
 					{status || 'Loading…'}
 				</div>

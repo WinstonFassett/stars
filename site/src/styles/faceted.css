@@ -289,16 +289,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-}
-/* When we have initial/prerendered data, remove the blocking overlay background */
-.fb-loading-overlay.has-initial {
+  /* Default: no filters, no blocking background */
   background: transparent;
   backdrop-filter: none;
   pointer-events: none;
 }
-.fb-loading-overlay.has-initial .fb-loading-card {
+/* When there are active filters/search, show blocking overlay background */
+.fb-loading-overlay.has-filters {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+.fb-loading-overlay .fb-loading-card {
   pointer-events: auto;
 }
 .fb-loading-card {
