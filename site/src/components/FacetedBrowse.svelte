@@ -730,12 +730,28 @@
 	}
 
 	// Escape closes the modal; arrow keys navigate; "/" focuses search.
+	// Cmd+ArrowDown/ArrowUp scroll to bottom/top.
 	function onKeydown(e) {
 		if (selected) {
 			if (e.key === 'Escape') { closeModal(); return; }
 			if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); navigate(1); return; }
 			if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); navigate(-1); return; }
 		}
+
+		// Cmd+ArrowDown: scroll to bottom
+		if ((e.metaKey || e.ctrlKey) && e.key === 'ArrowDown' && scrollContainer) {
+			e.preventDefault();
+			scrollContainer.scrollTop = scrollContainer.scrollHeight;
+			return;
+		}
+
+		// Cmd+ArrowUp: scroll to top
+		if ((e.metaKey || e.ctrlKey) && e.key === 'ArrowUp' && scrollContainer) {
+			e.preventDefault();
+			scrollContainer.scrollTop = 0;
+			return;
+		}
+
 		if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
 		const t = e.target;
 		if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
@@ -943,7 +959,7 @@
 		</div>
 
 		{#if loading}
-			<div class="fb-state">Loading…</div>
+			<div class="fb-state">{status || 'Loading…'}</div>
 		{:else if displayCount === 0}
 			<div class="fb-state">No results match your filters.</div>
 		{:else}
