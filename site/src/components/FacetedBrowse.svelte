@@ -796,6 +796,10 @@
 		if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 3000 });
 		else setTimeout(warm, 1500);
 
+		// Show loading indicator while CSV downloads and parses
+		loading = true;
+		status = 'Loading…';
+
 		const buffer = [];
 		Papa.parse(DATA_URL, {
 			download: true,
@@ -806,7 +810,6 @@
 				if (buffer.length >= 500) {
 					rows = [...rows, ...buffer.splice(0)];
 					loadedCount = rows.length;
-					loading = false;
 					status = `Loading… ${rows.length.toLocaleString()} repos`;
 				}
 			},
@@ -963,7 +966,7 @@
 		{:else}
 			<div class="fb-scroll-container" bind:this={scrollContainer} onscroll={onScroll}>
 				{#if loading}
-					<div class="fb-loading-banner" transition:fade={{ duration: 300 }}>
+					<div class="fb-loading-banner" out:fade={{ duration: 600 }}>
 						<div class="fb-loading-card">
 							{status || 'Loading…'}
 						</div>
