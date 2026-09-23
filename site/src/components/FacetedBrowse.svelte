@@ -276,10 +276,16 @@
 		// Calculate number of columns in the grid
 		const columns = Math.max(1, Math.floor(containerWidth / (CARD_MIN_WIDTH + CARD_GAP)));
 
+		// Calculate total rows needed for all cards
+		const totalRows = Math.ceil(filteredRows.length / columns);
+
 		// Calculate which rows are visible
-		const startRow = Math.max(0, Math.floor(scrollTop / CARD_HEIGHT) - OVERSCAN_ROWS);
-		const visibleRows = Math.ceil(viewportHeight / CARD_HEIGHT) + (OVERSCAN_ROWS * 2);
-		const endRow = startRow + visibleRows;
+		const startRow = Math.max(0, Math.min(
+			totalRows - 1,
+			Math.floor(scrollTop / CARD_HEIGHT) - OVERSCAN_ROWS
+		));
+		const visibleRowCount = Math.ceil(viewportHeight / CARD_HEIGHT) + (OVERSCAN_ROWS * 2);
+		const endRow = Math.min(totalRows, startRow + visibleRowCount);
 
 		// Convert rows to card indices
 		const startIndex = startRow * columns;
@@ -938,7 +944,7 @@
 
 		{#if loading}
 			<div class="fb-state">Loading…</div>
-		{:else if visibleRows.length === 0}
+		{:else if displayCount === 0}
 			<div class="fb-state">No results match your filters.</div>
 		{:else}
 			<div class="fb-scroll-container" bind:this={scrollContainer} onscroll={onScroll}>
