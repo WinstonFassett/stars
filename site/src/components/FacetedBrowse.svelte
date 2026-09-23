@@ -36,8 +36,11 @@
 
 	const NUMERIC_COLS = new Set(['stargazers_count', 'forks_count', 'open_issues_count']);
 	const BOOLEAN_COLS = new Set(['fork', 'archived']);
-	const RENDER_LIMIT = 100; // cap rendered cards so FLIP animation stays smooth
+	const CARD_HEIGHT = 160; // approximate card height in pixels
+	const CARD_MIN_WIDTH = 330; // matches grid-template-columns minmax value
+	const CARD_GAP = 11.2; // 0.7rem gap in pixels (0.7 * 16)
 	const CARD_TOPICS = 3; // topic chips shown per card before the "+N" overflow
+	const OVERSCAN_ROWS = 2; // render N extra rows above/below viewport
 
 	// Linguist language colors (verbatim from Orbit's lib/languages.ts, which is
 	// the canonical GitHub palette). Unmapped languages fall back to the accent.
@@ -129,6 +132,10 @@
 	let expanded = $state({}); // facet column → showing all rows?
 	let reducedMotion = $state(false); // set from matchMedia on mount
 	let sidebarOpen = $state(false);
+	let scrollTop = $state(0); // virtual scroll position
+	let viewportHeight = $state(800); // viewport height, updated on mount/resize
+	let containerWidth = $state(1200); // container width, updated on mount/resize
+	let scrollContainer = $state(null); // reference to scrollable container
 
 	// README rendered in the modal. Fetched on demand from a CDN (no GitHub API
 	// rate limit), rendered + sanitized client-side, and memoized per repo.
@@ -260,10 +267,45 @@
 
 	const filteredRows = $derived(hasData ? sortRows(applyFilters(rows)) : []);
 	const selectedIdx = $derived(selected && filteredRows.length ? filteredRows.findIndex(r => r === selected) : -1);
-	const visibleRows = $derived(
-		hasData ? filteredRows.slice(0, RENDER_LIMIT) : (initial?.visibleRows ?? [])
-	);
+
+	// Virtual scrolling: calculate which cards are visible based on scroll position
+	// Account for grid layout with multiple columns
+	const visibleSlice = $derived.by(() => {
+		if (!hasData) return { rows: initial?.visibleRows ?? [], startIndex: 0, offsetY: 0 };
+
+		// Calculate number of columns in the grid
+		const columns = Math.max(1, Math.floor(containerWidth / (CARD_MIN_WIDTH + CARD_GAP)));
+
+		// Calculate total rows needed for all cards
+		const totalRows = Math.ceil(filteredRows.length / columns);
+
+		// Calculate which rows are visible
+		const startRow = Math.max(0, Math.min(
+			totalRows - 1,
+			Math.floor(scrollTop / CARD_HEIGHT) - OVERSCAN_ROWS
+		));
+		const visibleRowCount = Math.ceil(viewportHeight / CARD_HEIGHT) + (OVERSCAN_ROWS * 2);
+		const endRow = Math.min(totalRows, startRow + visibleRowCount);
+
+		// Convert rows to card indices
+		const startIndex = startRow * columns;
+		const endIndex = Math.min(filteredRows.length, endRow * columns);
+
+		return {
+			rows: filteredRows.slice(startIndex, endIndex),
+			startIndex,
+			offsetY: startRow * CARD_HEIGHT
+		};
+	});
+
+	const visibleRows = $derived(visibleSlice.rows);
 	const displayCount = $derived(hasData ? filteredRows.length : (initial?.resultCount ?? 0));
+	const totalHeight = $derived.by(() => {
+		if (!hasData) return 0;
+		const columns = Math.max(1, Math.floor(containerWidth / (CARD_MIN_WIDTH + CARD_GAP)));
+		const totalRows = Math.ceil(filteredRows.length / columns);
+		return totalRows * CARD_HEIGHT;
+	});
 	const facetData = $derived(
 		hasData
 			? FACETS.map((facet) => {
@@ -674,13 +716,42 @@
 			.replace(/"/g, '&quot;');
 	}
 
+	// Handle scroll events for virtual scrolling
+	function onScroll(e) {
+		scrollTop = e.currentTarget.scrollTop;
+	}
+
+	// Update viewport dimensions on resize
+	function updateViewportHeight() {
+		if (scrollContainer) {
+			viewportHeight = scrollContainer.clientHeight;
+			containerWidth = scrollContainer.clientWidth;
+		}
+	}
+
 	// Escape closes the modal; arrow keys navigate; "/" focuses search.
+	// Cmd+ArrowDown/ArrowUp scroll to bottom/top.
 	function onKeydown(e) {
 		if (selected) {
 			if (e.key === 'Escape') { closeModal(); return; }
 			if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); navigate(1); return; }
 			if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); navigate(-1); return; }
 		}
+
+		// Cmd+ArrowDown: scroll to bottom
+		if ((e.metaKey || e.ctrlKey) && e.key === 'ArrowDown' && scrollContainer) {
+			e.preventDefault();
+			scrollContainer.scrollTop = scrollContainer.scrollHeight;
+			return;
+		}
+
+		// Cmd+ArrowUp: scroll to top
+		if ((e.metaKey || e.ctrlKey) && e.key === 'ArrowUp' && scrollContainer) {
+			e.preventDefault();
+			scrollContainer.scrollTop = 0;
+			return;
+		}
+
 		if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
 		const t = e.target;
 		if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
@@ -707,7 +778,11 @@
 		reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		restoreFromURL();
 		window.addEventListener('keydown', onKeydown);
+		window.addEventListener('resize', updateViewportHeight);
 		document.addEventListener('toggle-sidebar', () => (sidebarOpen = !sidebarOpen));
+
+		// Initialize viewport height
+		requestAnimationFrame(() => updateViewportHeight());
 
 		// Pre-warm the markdown render libs during idle time so the first README
 		// (hover or click) skips the import cost. mermaid is left out — it's large
@@ -721,6 +796,10 @@
 		if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 3000 });
 		else setTimeout(warm, 1500);
 
+		// Show loading indicator while CSV downloads and parses
+		loading = true;
+		status = 'Loading…';
+
 		const buffer = [];
 		Papa.parse(DATA_URL, {
 			download: true,
@@ -731,7 +810,6 @@
 				if (buffer.length >= 500) {
 					rows = [...rows, ...buffer.splice(0)];
 					loadedCount = rows.length;
-					loading = false;
 					status = `Loading… ${rows.length.toLocaleString()} repos`;
 				}
 			},
@@ -748,7 +826,10 @@
 			},
 		});
 
-		return () => window.removeEventListener('keydown', onKeydown);
+		return () => {
+			window.removeEventListener('keydown', onKeydown);
+			window.removeEventListener('resize', updateViewportHeight);
+		};
 	});
 </script>
 
@@ -880,13 +961,13 @@
 			</div>
 		</div>
 
-		{#if loading}
-			<div class="fb-state">Loading…</div>
-		{:else if visibleRows.length === 0}
+		{#if !loading && displayCount === 0}
 			<div class="fb-state">No results match your filters.</div>
 		{:else}
-			<div class="fb-grid">
-				{#each visibleRows as row (row.full_name)}
+			<div class="fb-scroll-container" bind:this={scrollContainer} onscroll={onScroll}>
+				<div class="fb-scroll-spacer" style="height: {totalHeight}px;">
+					<div class="fb-grid" style="top: {visibleSlice.offsetY}px;">
+						{#each visibleRows as row (row.full_name)}
 					{@const topics = topicsOf(row)}
 					<div
 						class="repo-card"
@@ -950,7 +1031,18 @@
 							<span class="repo-date">{formatDate(row.starred_at)}</span>
 						</div>
 					</div>
-				{/each}
+						{/each}
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Loading overlay -->
+		{#if loading && !selected}
+			<div class="fb-loading-overlay" class:has-filters={filters.length > 0 || searchQuery.length > 0} out:fade={{ duration: 600 }}>
+				<div class="fb-loading-card card">
+					{status || 'Loading…'}
+				</div>
 			</div>
 		{/if}
 	</div>

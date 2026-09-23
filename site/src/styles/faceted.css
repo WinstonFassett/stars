@@ -143,7 +143,10 @@
 }
 
 /* ── Main column ─────────────────────────────────────────────────────────── */
-.fb-main { min-width: 0; }
+.fb-main {
+  min-width: 0;
+  position: relative;
+}
 
 /* Sticky 3-region header: brand · search · controls */
 .fb-header {
@@ -247,8 +250,23 @@
 }
 .fb-sort-dir:hover { background: var(--muted); }
 
+/* ── Virtual scrolling container ─────────────────────────────────────────── */
+.fb-scroll-container {
+  height: calc(100vh - 3.6rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.fb-scroll-spacer {
+  position: relative;
+  width: 100%;
+}
+
 /* ── Card grid ───────────────────────────────────────────────────────────── */
 .fb-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   gap: 0.7rem;
@@ -258,6 +276,39 @@
   padding: 3rem var(--fb-gutter);
   color: var(--muted-foreground);
   font-size: 0.85rem;
+}
+
+/* ── Loading overlay ─────────────────────────────────────────────────────── */
+.fb-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Default: no filters, no blocking background */
+  background: transparent;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+/* When there are active filters/search, show blocking overlay background */
+.fb-loading-overlay.has-filters {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+.fb-loading-overlay .fb-loading-card {
+  pointer-events: auto;
+}
+.fb-loading-card {
+  /* Use standard card styling from ui26 */
+  padding: calc(var(--spacing) * 4);
+  font-size: 14px;
+  min-width: 200px;
+  text-align: center;
 }
 
 /* ── Repo card ───────────────────────────────────────────────────────────── */
