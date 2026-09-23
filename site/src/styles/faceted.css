@@ -275,6 +275,27 @@
   font-size: 0.85rem;
 }
 
+/* ── Loading banner ──────────────────────────────────────────────────────── */
+.fb-loading-banner {
+  position: sticky;
+  top: 1rem;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--fb-gutter);
+  pointer-events: none;
+}
+.fb-loading-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem 1.5rem;
+  font-size: 0.9rem;
+  color: var(--foreground);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  pointer-events: auto;
+}
+
 /* ── Repo card ───────────────────────────────────────────────────────────── */
 .repo-card {
   display: flex;

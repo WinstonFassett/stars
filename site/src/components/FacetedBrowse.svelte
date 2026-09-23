@@ -958,12 +958,17 @@
 			</div>
 		</div>
 
-		{#if loading}
-			<div class="fb-state">{status || 'Loading…'}</div>
-		{:else if displayCount === 0}
+		{#if !loading && displayCount === 0}
 			<div class="fb-state">No results match your filters.</div>
 		{:else}
 			<div class="fb-scroll-container" bind:this={scrollContainer} onscroll={onScroll}>
+				{#if loading}
+					<div class="fb-loading-banner" transition:fade={{ duration: 300 }}>
+						<div class="fb-loading-card">
+							{status || 'Loading…'}
+						</div>
+					</div>
+				{/if}
 				<div class="fb-scroll-spacer" style="height: {totalHeight}px;">
 					<div class="fb-grid" style="top: {visibleSlice.offsetY}px;">
 						{#each visibleRows as row (row.full_name)}
