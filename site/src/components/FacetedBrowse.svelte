@@ -1038,7 +1038,7 @@
 		{/if}
 
 		<!-- Loading overlay -->
-		{#if loading}
+		{#if loading && !selected && !initial}
 			<div class="fb-loading-overlay" out:fade={{ duration: 600 }}>
 				<div class="fb-loading-card card">
 					{status || 'Loading…'}
