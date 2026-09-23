@@ -143,7 +143,10 @@
 }
 
 /* ── Main column ─────────────────────────────────────────────────────────── */
-.fb-main { min-width: 0; }
+.fb-main {
+  min-width: 0;
+  position: relative;
+}
 
 /* Sticky 3-region header: brand · search · controls */
 .fb-header {
@@ -275,39 +278,26 @@
   font-size: 0.85rem;
 }
 
-/* ── Loading banner ──────────────────────────────────────────────────────── */
-.fb-loading-banner {
-  position: sticky;
-  top: 1rem;
+/* ── Loading overlay ─────────────────────────────────────────────────────── */
+.fb-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 100;
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 0 var(--fb-gutter);
-  pointer-events: none;
-  margin-bottom: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
 }
 .fb-loading-card {
-  background: var(--card);
-  border: 2px solid var(--primary);
-  border-radius: 0.5rem;
-  padding: 1.25rem 2rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--card-foreground);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  pointer-events: auto;
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.02);
-  }
+  /* Use standard card styling from ui26 */
+  padding: calc(var(--spacing) * 4);
+  font-size: 14px;
+  min-width: 200px;
+  text-align: center;
 }
 
 /* ── Repo card ───────────────────────────────────────────────────────────── */

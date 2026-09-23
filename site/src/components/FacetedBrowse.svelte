@@ -965,13 +965,6 @@
 			<div class="fb-state">No results match your filters.</div>
 		{:else}
 			<div class="fb-scroll-container" bind:this={scrollContainer} onscroll={onScroll}>
-				{#if loading}
-					<div class="fb-loading-banner" out:fade={{ duration: 600 }}>
-						<div class="fb-loading-card">
-							{status || 'Loading…'}
-						</div>
-					</div>
-				{/if}
 				<div class="fb-scroll-spacer" style="height: {totalHeight}px;">
 					<div class="fb-grid" style="top: {visibleSlice.offsetY}px;">
 						{#each visibleRows as row (row.full_name)}
@@ -1040,6 +1033,15 @@
 					</div>
 						{/each}
 					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- Loading overlay -->
+		{#if loading}
+			<div class="fb-loading-overlay" out:fade={{ duration: 600 }}>
+				<div class="fb-loading-card card">
+					{status || 'Loading…'}
 				</div>
 			</div>
 		{/if}
